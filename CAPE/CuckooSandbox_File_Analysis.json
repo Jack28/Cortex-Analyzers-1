@@ -1,0 +1,20 @@
+{
+  "name": "CAPESandbox_File_Analysis_Inet",
+  "version": "0.1",
+  "author": "Mario Henkel",
+  "url": "https://github.com/hariomenkel/Cortex-Analyzers",
+  "license": "AGPL-V3",
+  "description": "CAPE Sandbox file analysis with Internet access.",
+  "dataTypeList": ["file"],
+  "command": "CAPE/capesandbox_analyzer.py",
+  "baseConfig": "CAPESandbox",
+  "configurationItems": [
+    {
+      "name": "url",
+      "description": "URL",
+      "type": "string",
+      "multi": false,
+      "required": true
+    }
+  ]
+}
