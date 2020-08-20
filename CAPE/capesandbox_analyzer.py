@@ -53,15 +53,19 @@ class CAPESandboxAnalyzer(Analyzer):
                 filename = self.get_param('filename', basename(filepath))
                 with open(filepath, "rb") as sample:
                     files = {"file": (filename, sample)}
-                    response = requests.post(self.url + 'tasks/create/file/', files=files)
-                task_id = response.json()['data']['task_ids'][0] if 'task_ids' in response.json().keys() \
-                    else response.json()['data']['task_ids'][0]
+                    response = requests.post(self.url + 'tasks/create/file', files=files)
+                if 'task_ids' in response.json().keys():
+                    task_id = response.json()['task_ids'][0]
+                elif 'task_id' in response.json().keys():
+                    task_id = response.json()['task_id']
+                else:
+                    self.error(response.json())
 
             # url analysis
             elif self.data_type == 'url':
                 data = {"url": self.get_data()}
-                response = requests.post(self.url + 'tasks/create/url/', data=data)
-                task_id = response.json()['data']['task_ids'][0]
+                response = requests.post(self.url + 'tasks/create/url', data=data)
+                task_id = response.json()['task_ids'][0]
 
             else:
                 self.error('Invalid data type !')
@@ -71,7 +75,7 @@ class CAPESandboxAnalyzer(Analyzer):
             while not finished and tries <= 15:  # wait max 15 mins
                 time.sleep(60)
                 response = requests.get(self.url + 'tasks/view/' + str(task_id))
-                content = response.json()['data']['status']
+                content = response.json()['task']['status']
                 if content == 'reported':
                     finished = True
                 tries += 1
@@ -79,7 +83,7 @@ class CAPESandboxAnalyzer(Analyzer):
                 self.error('CAPESandbox analysis timed out')
 
             # Download the report
-            response = requests.get(self.url + 'tasks/get/report/' + str(task_id) + '/json')
+            response = requests.get(self.url + 'tasks/report/' + str(task_id) + '/json')
             resp_json = response.json()
             list_description = [x['description'] for x in resp_json['signatures']]
             if 'suricata' in resp_json.keys() and 'alerts' in resp_json['suricata'].keys():
